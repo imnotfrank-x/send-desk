@@ -5,12 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:smoke": "tsx scripts/smoke-runtime.ts",
-    "db:migrate": "tsx scripts/apply-migrations.ts",
-    "db:setup": "prisma generate && tsx scripts/apply-migrations.ts && prisma db seed",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:setup": "prisma generate && prisma migrate deploy && prisma db seed",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "pdf:sample": "tsx scripts/generate-sample-pdf.ts"
