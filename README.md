@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SendDesk
 
-## Getting Started
+MVP académico para digitalizar la operación interna de una paquetería. Permite administrar clientes y capturar hojas digitales de envío de hasta seis paquetes, conservando la organización del formato físico.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 con App Router y TypeScript
+- Tailwind CSS 4
+- Prisma ORM 6
+- SQLite
+- PDF-lib para exportación
+- Vitest para pruebas
+
+## Puesta en marcha
+
+Requiere Node.js 20.9 o superior.
 
 ```bash
+npm install
+copy .env.example .env
+npm run db:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Credenciales ficticias
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Rol | Correo | Contraseña |
+| --- | --- | --- |
+| Administrador | `admin@senddesk.demo` | `Demo1234!` |
+| Operador | `operador@senddesk.demo` | `Demo1234!` |
 
-## Learn More
+El Administrador puede eliminar clientes. El Operador puede consultarlos, crearlos y editarlos. Ningún dato incluido corresponde a personas o empresas reales.
 
-To learn more about Next.js, take a look at the following resources:
+## Comandos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev          # servidor de desarrollo
+npm run build        # compilación de producción
+npm run lint         # análisis estático
+npm test             # pruebas automatizadas
+npm run test:smoke   # prueba HTTP con el servidor de desarrollo activo
+npm run db:setup     # genera cliente, aplica migraciones y carga demo
+npm run db:migrate   # aplica migraciones pendientes
+npm run db:seed      # repone los datos ficticios
+npm run db:studio    # inspector local de Prisma
+npm run pdf:sample   # regenera el PDF ficticio de muestra
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Alcance por etapas
 
-## Deploy on Vercel
+### Etapa 1 — completada
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Proyecto base y SQLite con migraciones reproducibles.
+- Inicio y cierre de sesión con cookie HTTP-only firmada.
+- Roles `ADMIN` y `OPERADOR`.
+- Directorio de clientes con alta, consulta, edición, eliminación por Administrador y búsqueda.
+- Endpoint y componente de autocompletado por nombre, código o teléfono.
+- Validaciones del servidor y estados vacíos/errores básicos.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Etapa 2 — completada
+
+- Hojas digitales con una a seis posiciones de paquete.
+- Remitente, destinatario, teléfonos, direcciones, peso, número y descripción por paquete.
+- Autocompletado de ambas partes desde el directorio, conservando una copia histórica de los datos.
+- Listado, búsqueda por folio o paquete y detalle con formato inspirado en la hoja física.
+- Guardado transaccional de hoja y paquetes.
+
+### Etapa 3 — completada
+
+- Descarga PDF A4 horizontal por hoja, con seis posiciones y espacios libres visibles.
+- Dashboard con hojas, paquetes, peso, clientes, actividad semanal y capturas recientes.
+- Interfaz responsiva, estados vacíos, foco visible, favicon propio y navegación compacta.
+- PDF ficticio de muestra en `output/pdf/senddesk-hoja-demo.pdf`.
+- Herramientas WebMCP progresivas para buscar clientes e iniciar una captura en navegadores compatibles.
+
+## Decisiones del MVP
+
+La aplicación usa Server Components y Server Actions de Next.js, una única base SQLite y módulos pequeños por dominio. La autenticación es local y deliberadamente básica para demostración; antes de uso productivo debe sustituirse por un proveedor de identidad y secretos administrados.
+
+Los PDFs se generan bajo demanda y no se almacenan en la base. Los datos históricos del remitente y destinatario se copian a cada paquete para preservar la hoja tal como fue capturada.
+
+## Flujo Git
+
+- `main`: base estable.
+- `develop`: integración del MVP.
+- `feature/stage-1-foundation`: configuración, acceso y clientes.
+- `feature/stage-2-shipments`: hojas y paquetes.
+- `feature/stage-3-pdf-dashboard`: PDF, resumen y acabado.
+
