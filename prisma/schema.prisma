@@ -12,6 +12,11 @@ enum Role {
   OPERADOR
 }
 
+enum ShipmentStatus {
+  DRAFT
+  READY
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -20,6 +25,7 @@ model User {
   role         Role     @default(OPERADOR)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  shipments    Shipment[]
 }
 
 model Customer {
@@ -34,5 +40,40 @@ model Customer {
 
   @@index([name])
   @@index([phone])
+}
+
+model Shipment {
+  id          String         @id @default(cuid())
+  sheetNumber String         @unique
+  status      ShipmentStatus @default(READY)
+  createdById String
+  createdBy   User           @relation(fields: [createdById], references: [id])
+  parcels     Parcel[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([createdById])
+}
+
+model Parcel {
+  id               String   @id @default(cuid())
+  shipmentId       String
+  shipment         Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  position         Int
+  packageNumber    String   @unique
+  senderName       String
+  senderPhone      String
+  senderAddress    String
+  recipientName    String
+  recipientPhone   String
+  recipientAddress String
+  weight           Float
+  description      String
+  createdAt        DateTime @default(now())
+
+  @@unique([shipmentId, position])
+  @@index([shipmentId])
 }
 

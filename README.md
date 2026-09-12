@@ -57,11 +57,13 @@ npm run db:studio    # inspector local de Prisma
 - Endpoint y componente de autocompletado por nombre, código o teléfono.
 - Validaciones del servidor y estados vacíos/errores básicos.
 
-### Etapa 2 — pendiente
+### Etapa 2 — completada
 
-- Hojas digitales con máximo seis paquetes.
+- Hojas digitales con una a seis posiciones de paquete.
 - Remitente, destinatario, teléfonos, direcciones, peso, número y descripción por paquete.
-- Autocompletado desde el directorio.
+- Autocompletado de ambas partes desde el directorio, conservando una copia histórica de los datos.
+- Listado, búsqueda por folio o paquete y detalle con formato inspirado en la hoja física.
+- Guardado transaccional de hoja y paquetes.
 
 ### Etapa 3 — pendiente
 
