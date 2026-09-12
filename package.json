@@ -8,10 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:smoke": "tsx scripts/smoke-runtime.ts",
     "db:migrate": "tsx scripts/apply-migrations.ts",
     "db:setup": "prisma generate && tsx scripts/apply-migrations.ts && prisma db seed",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "pdf:sample": "tsx scripts/generate-sample-pdf.ts"
   },
   "dependencies": {
     "@prisma/client": "6.12.0",
