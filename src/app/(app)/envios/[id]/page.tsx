@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Box } from "lucide-react";
+import { ArrowLeft, Box, Download } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
@@ -10,7 +10,7 @@ export default async function ShipmentDetailPage({ params }: { params: Promise<{
   if (!shipment) notFound();
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="no-print mb-5"><Link href="/envios" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1769aa] hover:underline"><ArrowLeft size={17} aria-hidden /> Volver a hojas</Link></div>
+      <div className="no-print mb-5 flex items-center justify-between gap-4"><Link href="/envios" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1769aa] hover:underline"><ArrowLeft size={17} aria-hidden /> Volver a hojas</Link><a href={`/api/envios/${shipment.id}/pdf`} className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#1769aa] px-5 font-semibold text-white hover:bg-[#12578f]"><Download size={18} aria-hidden /> Descargar PDF</a></div>
       <article className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
         <header className="grid gap-4 border-b-2 border-[#102a43] p-5 sm:grid-cols-[1fr_auto] sm:items-end sm:p-7">
           <div><p className="text-sm font-bold uppercase tracking-[0.2em] text-[#1769aa]">Hoja digital de envío</p><h1 className="mt-1 text-3xl font-black tracking-tight text-[#102a43]">{shipment.sheetNumber}</h1></div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Boxes, LayoutDashboard, LogOut, PackagePlus, UsersRound } from "lucide-react";
 import type { Role } from "@prisma/client";
 import { logoutAction } from "@/app/actions/auth";
+import { WebMcpTools } from "@/components/webmcp-tools";
 
 const navigation = [
   { href: "/dashboard", label: "Resumen", icon: LayoutDashboard },
@@ -13,6 +14,7 @@ const navigation = [
 export function AppShell({ children, user }: { children: React.ReactNode; user: { name: string; email: string; role: Role } }) {
   return (
     <div className="min-h-screen bg-[#f4f6f8] lg:grid lg:grid-cols-[250px_1fr]">
+      <WebMcpTools />
       <aside className="no-print bg-[#102a43] px-5 py-5 text-white lg:sticky lg:top-0 lg:h-screen lg:px-6 lg:py-7">
         <Link href="/dashboard" className="flex items-center gap-3" aria-label="Ir al resumen">
           <span className="grid size-10 place-items-center rounded-xl bg-[#18a6b8] shadow-lg shadow-cyan-950/30"><Boxes size={22} aria-hidden /></span>

@@ -40,10 +40,12 @@ npm run dev          # servidor de desarrollo
 npm run build        # compilación de producción
 npm run lint         # análisis estático
 npm test             # pruebas automatizadas
+npm run test:smoke   # prueba HTTP con el servidor de desarrollo activo
 npm run db:setup     # genera cliente, aplica migraciones y carga demo
 npm run db:migrate   # aplica migraciones pendientes
 npm run db:seed      # repone los datos ficticios
 npm run db:studio    # inspector local de Prisma
+npm run pdf:sample   # regenera el PDF ficticio de muestra
 ```
 
 ## Alcance por etapas
@@ -65,15 +67,19 @@ npm run db:studio    # inspector local de Prisma
 - Listado, búsqueda por folio o paquete y detalle con formato inspirado en la hoja física.
 - Guardado transaccional de hoja y paquetes.
 
-### Etapa 3 — pendiente
+### Etapa 3 — completada
 
-- Exportación PDF.
-- Resumen administrativo.
-- Ajustes visuales y responsivos finales.
+- Descarga PDF A4 horizontal por hoja, con seis posiciones y espacios libres visibles.
+- Dashboard con hojas, paquetes, peso, clientes, actividad semanal y capturas recientes.
+- Interfaz responsiva, estados vacíos, foco visible, favicon propio y navegación compacta.
+- PDF ficticio de muestra en `output/pdf/senddesk-hoja-demo.pdf`.
+- Herramientas WebMCP progresivas para buscar clientes e iniciar una captura en navegadores compatibles.
 
 ## Decisiones del MVP
 
 La aplicación usa Server Components y Server Actions de Next.js, una única base SQLite y módulos pequeños por dominio. La autenticación es local y deliberadamente básica para demostración; antes de uso productivo debe sustituirse por un proveedor de identidad y secretos administrados.
+
+Los PDFs se generan bajo demanda y no se almacenan en la base. Los datos históricos del remitente y destinatario se copian a cada paquete para preservar la hoja tal como fue capturada.
 
 ## Flujo Git
 
