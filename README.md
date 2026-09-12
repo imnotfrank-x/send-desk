@@ -7,7 +7,7 @@ MVP académico para digitalizar la operación interna de una paquetería. Permit
 - Next.js 16 con App Router y TypeScript
 - Tailwind CSS 4
 - Prisma ORM 6
-- SQLite
+- PostgreSQL en Supabase
 - PDF-lib para exportación
 - Vitest para pruebas
 
@@ -15,14 +15,18 @@ MVP académico para digitalizar la operación interna de una paquetería. Permit
 
 Requiere Node.js 20.9 o superior.
 
-```bash
+```powershell
+Copy-Item .env.example .env
+# Sustituye en .env las conexiones de tu proyecto Supabase.
 npm install
-copy .env.example .env
 npm run db:setup
 npm run dev
 ```
 
 Abre `http://localhost:3000`.
+
+La guía completa para crear la base, configurar variables y publicar el proyecto
+está en [Despliegue con Vercel y Supabase](docs/despliegue-vercel-supabase.md).
 
 ### Credenciales ficticias
 
@@ -41,8 +45,9 @@ npm run build        # compilación de producción
 npm run lint         # análisis estático
 npm test             # pruebas automatizadas
 npm run test:smoke   # prueba HTTP con el servidor de desarrollo activo
-npm run db:setup     # genera cliente, aplica migraciones y carga demo
-npm run db:migrate   # aplica migraciones pendientes
+npm run db:setup     # genera cliente, migra PostgreSQL y carga datos demo
+npm run db:migrate   # aplica migraciones pendientes en producción
+npm run db:migrate:dev # crea migraciones durante el desarrollo
 npm run db:seed      # repone los datos ficticios
 npm run db:studio    # inspector local de Prisma
 npm run pdf:sample   # regenera el PDF ficticio de muestra
@@ -52,7 +57,7 @@ npm run pdf:sample   # regenera el PDF ficticio de muestra
 
 ### Etapa 1 — completada
 
-- Proyecto base y SQLite con migraciones reproducibles.
+- Proyecto base y PostgreSQL en Supabase con migraciones reproducibles.
 - Inicio y cierre de sesión con cookie HTTP-only firmada.
 - Roles `ADMIN` y `OPERADOR`.
 - Directorio de clientes con alta, consulta, edición, eliminación por Administrador y búsqueda.
@@ -77,7 +82,12 @@ npm run pdf:sample   # regenera el PDF ficticio de muestra
 
 ## Decisiones del MVP
 
-La aplicación usa Server Components y Server Actions de Next.js, una única base SQLite y módulos pequeños por dominio. La autenticación es local y deliberadamente básica para demostración; antes de uso productivo debe sustituirse por un proveedor de identidad y secretos administrados.
+La aplicación usa Server Components y Server Actions de Next.js, una única base
+PostgreSQL administrada por Supabase y módulos pequeños por dominio. Prisma accede
+a ella exclusivamente desde el servidor; el navegador no recibe credenciales de
+base de datos. La autenticación es local y deliberadamente básica para
+demostración; antes de uso productivo debe sustituirse por un proveedor de
+identidad y secretos administrados.
 
 Los PDFs se generan bajo demanda y no se almacenan en la base. Los datos históricos del remitente y destinatario se copian a cada paquete para preservar la hoja tal como fue capturada.
 
