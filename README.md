@@ -37,6 +37,22 @@ está en [Despliegue con Vercel y Supabase](docs/despliegue-vercel-supabase.md).
 
 El Administrador puede eliminar clientes. El Operador puede consultarlos, crearlos y editarlos. Ningún dato incluido corresponde a personas o empresas reales.
 
+### Inicio de sesión y registro
+
+En `/login` puedes iniciar sesión con tu correo y contraseña o seleccionar
+**Registrarse** para abrir `/registro`. Las cuentas nuevas solicitan nombre,
+correo, contraseña (al menos 8 caracteres) y confirmación de contraseña.
+
+El registro normaliza el correo, evita cuentas duplicadas, guarda únicamente el
+hash bcrypt de la contraseña y asigna siempre el rol `OPERADOR` desde el servidor.
+Al crear la cuenta se inicia sesión y se abre el dashboard. Los administradores
+existentes conservan sus permisos; el formulario no permite elegir ese rol.
+La contraseña admite como máximo 72 bytes, límite de bcrypt.
+
+Se utiliza la tabla `User` existente: este cambio no requiere migraciones ni
+Supabase Auth. El registro está abierto para la demostración académica y las
+cuentas comparten el directorio y las hojas de la misma operación.
+
 ## Comandos
 
 ```bash
