@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { Boxes, LayoutDashboard, LogOut, PackagePlus, UsersRound } from "lucide-react";
+import { Boxes, CalendarClock, LayoutDashboard, LogOut, UserCog, UsersRound } from "lucide-react";
 import type { Role } from "@prisma/client";
 import { logoutAction } from "@/app/actions/auth";
 import { WebMcpTools } from "@/components/webmcp-tools";
 
 const navigation = [
+  { href: "/jornada", label: "Jornada", icon: CalendarClock },
   { href: "/dashboard", label: "Resumen", icon: LayoutDashboard },
   { href: "/clientes", label: "Clientes", icon: UsersRound },
   { href: "/envios", label: "Hojas", icon: Boxes },
-  { href: "/envios/nueva", label: "Nueva hoja", icon: PackagePlus },
 ];
 
 export function AppShell({ children, user }: { children: React.ReactNode; user: { name: string; email: string; role: Role } }) {
@@ -21,7 +21,7 @@ export function AppShell({ children, user }: { children: React.ReactNode; user: 
           <span><span className="block text-xl font-extrabold tracking-tight">SendDesk</span><span className="block text-xs text-slate-300">Control de envíos</span></span>
         </Link>
         <nav className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:mt-10 lg:grid-cols-1" aria-label="Navegación principal">
-          {navigation.map(({ href, label, icon: Icon }) => (
+          {[...navigation.filter((item) => item.href !== "/dashboard" || user.role === "ADMIN"), ...(user.role === "ADMIN" ? [{ href: "/empleados", label: "Empleados", icon: UserCog }] : [])].map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"><Icon size={19} aria-hidden />{label}</Link>
           ))}
         </nav>

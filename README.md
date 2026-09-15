@@ -37,21 +37,12 @@ está en [Despliegue con Vercel y Supabase](docs/despliegue-vercel-supabase.md).
 
 El Administrador puede eliminar clientes. El Operador puede consultarlos, crearlos y editarlos. Ningún dato incluido corresponde a personas o empresas reales.
 
-### Inicio de sesión y registro
+### Inicio de sesión y empleados
 
-En `/login` puedes iniciar sesión con tu correo y contraseña o seleccionar
-**Registrarse** para abrir `/registro`. Las cuentas nuevas solicitan nombre,
-correo, contraseña (al menos 8 caracteres) y confirmación de contraseña.
-
-El registro normaliza el correo, evita cuentas duplicadas, guarda únicamente el
-hash bcrypt de la contraseña y asigna siempre el rol `OPERADOR` desde el servidor.
-Al crear la cuenta se inicia sesión y se abre el dashboard. Los administradores
-existentes conservan sus permisos; el formulario no permite elegir ese rol.
-La contraseña admite como máximo 72 bytes, límite de bcrypt.
-
-Se utiliza la tabla `User` existente: este cambio no requiere migraciones ni
-Supabase Auth. El registro está abierto para la demostración académica y las
-cuentas comparten el directorio y las hojas de la misma operación.
+En `/login` se inicia sesión con correo y contraseña. El registro público está
+cerrado: un Administrador crea empleados, asigna roles, cambia contraseñas y
+elimina cuentas sin historial desde `/empleados`. Las contraseñas se almacenan
+como hash bcrypt y admiten como máximo 72 bytes.
 
 ## Comandos
 
@@ -96,6 +87,18 @@ npm run pdf:sample   # regenera el PDF ficticio de muestra
 - PDF ficticio de muestra en `output/pdf/senddesk-hoja-demo.pdf`.
 - Herramientas WebMCP progresivas para buscar clientes e iniciar una captura en navegadores compatibles.
 
+### Etapa 4 — jornada operativa v2
+
+- Jornada compartida con estados Activa, Pausada y Finalizada.
+- Hoja inicial de seis BLOQUES, hojas adicionales, expansión/reducción y limpieza con confirmación.
+- Autosave de borradores, indicador de conexión y totales en tiempo real de paquetes y kg.
+- Directorio actualizado al revisar toda la jornada y sugerencias de relaciones frecuentes.
+- Bloqueo de edición al finalizar, PDF multipágina con previsualización y limpieza condicionada.
+- Clientes inactivos a seis meses, administración de empleados y estadísticas de jornadas finalizadas.
+
+Para actualizar una instalación existente aplica la migración
+`202609140001_workday_v2` con `npm run db:migrate` antes de iniciar la aplicación.
+
 ## Decisiones del MVP
 
 La aplicación usa Server Components y Server Actions de Next.js, una única base
@@ -105,7 +108,7 @@ base de datos. La autenticación es local y deliberadamente básica para
 demostración; antes de uso productivo debe sustituirse por un proveedor de
 identidad y secretos administrados.
 
-Los PDFs se generan bajo demanda y no se almacenan en la base. Los datos históricos del remitente y destinatario se copian a cada paquete para preservar la hoja tal como fue capturada.
+Los PDFs se generan bajo demanda; la base conserva la fecha de generación para habilitar el reinicio seguro. Los datos históricos del remitente y destinatario se copian a cada BLOQUE para preservar la hoja tal como fue capturada.
 
 ## Flujo Git
 

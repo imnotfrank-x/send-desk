@@ -42,7 +42,7 @@ describe("registro de usuarios", () => {
   it("normaliza los datos, guarda un hash y no permite elegir ADMIN", async () => {
     mocks.create.mockResolvedValue({ id: "new-user", role: "OPERADOR" });
     vi.stubEnv("NODE_ENV", "production");
-    await expect(registerAction({}, form({ ...validValues, role: "ADMIN" }))).rejects.toThrow("REDIRECT:/dashboard");
+    await expect(registerAction({}, form({ ...validValues, role: "ADMIN" }))).rejects.toThrow("REDIRECT:/jornada");
     const saved = mocks.create.mock.calls[0][0].data;
     expect(saved.name).toBe("Persona Demo");
     expect(saved.email).toBe("nueva@senddesk.demo");
@@ -95,7 +95,7 @@ describe("registro de usuarios", () => {
 describe("inicio y cierre de sesión existentes", () => {
   it("permite entrar con la cuenta nueva y mantiene su rol", async () => {
     mocks.findUnique.mockResolvedValue({ id: "new-user", role: "OPERADOR", passwordHash: await hash(validValues.password, 4) });
-    await expect(loginAction({}, form())).rejects.toThrow("REDIRECT:/dashboard");
+    await expect(loginAction({}, form())).rejects.toThrow("REDIRECT:/jornada");
     expect(mocks.findUnique).toHaveBeenCalledWith({ where: { email: "nueva@senddesk.demo" } });
     expect(verifySessionToken(mocks.setCookie.mock.calls[0][1])).toMatchObject({ userId: "new-user", role: "OPERADOR" });
   });

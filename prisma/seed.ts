@@ -61,13 +61,27 @@ async function main() {
   }
 
   const admin = await prisma.user.findUniqueOrThrow({ where: { email: "admin@senddesk.demo" } });
+  const demoWorkday = await prisma.workday.upsert({
+    where: { id: "workday-demo-finalized" },
+    update: {},
+    create: {
+      id: "workday-demo-finalized",
+      status: "FINALIZED",
+      createdById: admin.id,
+      lastEditorId: admin.id,
+      lastActivityAt: new Date("2026-09-12T12:00:00Z"),
+      directorySavedAt: new Date("2026-09-12T12:05:00Z"),
+      finalizedAt: new Date("2026-09-12T12:10:00Z"),
+    },
+  });
   await prisma.shipment.upsert({
     where: { sheetNumber: "HD-DEMO-001" },
-    update: {},
+    update: { workdayId: demoWorkday.id, sheetIndex: 1, status: "READY" },
     create: {
       sheetNumber: "HD-DEMO-001",
       status: "READY",
       createdById: admin.id,
+      workdayId: demoWorkday.id,
       parcels: {
         create: [
           {
@@ -80,6 +94,7 @@ async function main() {
             recipientPhone: "555 010 2002",
             recipientAddress: "Calle Reforma 45, Col. Jardines, Ciudad Demo",
             weight: 3.25,
+            packageCount: 1,
             description: "Material de muestra",
           },
           {
@@ -92,12 +107,14 @@ async function main() {
             recipientPhone: "555 010 1001",
             recipientAddress: "Av. Universidad 120, Centro, Ciudad Demo",
             weight: 1.5,
+            packageCount: 1,
             description: "Documentos ficticios",
           },
         ],
       },
     },
   });
+  await prisma.parcel.updateMany({ where: { shipment: { sheetNumber: "HD-DEMO-001" }, packageCount: 0 }, data: { packageCount: 1 } });
 }
 
 main()

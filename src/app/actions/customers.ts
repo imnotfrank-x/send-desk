@@ -4,16 +4,18 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin, requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { customerSchema, type ActionState } from "@/lib/validations";
 
 function values(formData: FormData) {
+  const code = String(formData.get("code") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
   return {
     id: String(formData.get("id") ?? "") || undefined,
-    code: formData.get("code"),
+    code: code || `CLI-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
     name: formData.get("name"),
     phone: formData.get("phone"),
-    address: formData.get("address"),
+    address: address || "Sin dirección registrada",
     notes: String(formData.get("notes") ?? "") || undefined,
   };
 }
@@ -26,7 +28,7 @@ function prismaError(error: unknown): ActionState {
 }
 
 export async function saveCustomerAction(_: ActionState, formData: FormData): Promise<ActionState> {
-  await requireUser();
+  await requireAdmin();
   const parsed = customerSchema.safeParse(values(formData));
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
 

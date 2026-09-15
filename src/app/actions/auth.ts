@@ -21,7 +21,7 @@ export async function loginAction(_: ActionState, formData: FormData): Promise<A
   }
 
   await startSession(user);
-  redirect("/dashboard");
+  redirect(user.role === "ADMIN" ? "/dashboard" : "/jornada");
 }
 
 export async function registerAction(_: ActionState, formData: FormData): Promise<ActionState> {
@@ -52,7 +52,7 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
   }
 
   await startSession(user);
-  redirect("/dashboard");
+  redirect("/jornada");
 }
 
 async function startSession(user: { id: string; role: Role }) {

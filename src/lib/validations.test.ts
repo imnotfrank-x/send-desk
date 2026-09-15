@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { customerSchema, loginSchema, shipmentSchema } from "./validations";
+import { customerSchema, loginSchema, shipmentSchema, workdayDraftSchema } from "./validations";
 
 describe("validaciones de acceso", () => {
   it("acepta credenciales con formato válido", () => {
@@ -45,5 +45,18 @@ describe("validaciones de hojas", () => {
 
   it("rechaza números de paquete repetidos", () => {
     expect(shipmentSchema.safeParse({ parcels: [validParcel, validParcel] }).success).toBe(false);
+  });
+});
+
+describe("validaciones de jornada", () => {
+  const draft = { ...validParcel, id: undefined, position: 1, span: 1, packageCount: 1 };
+
+  it("acepta campos incompletos durante el autosave", () => {
+    expect(workdayDraftSchema.safeParse({ workdayId: "day-1", sheetId: "sheet-1", parcels: [{ ...draft, packageNumber: "", senderName: "", weight: 0, packageCount: 0 }] }).success).toBe(true);
+  });
+
+  it("rechaza bloques superpuestos o fuera de seis espacios", () => {
+    expect(workdayDraftSchema.safeParse({ workdayId: "day-1", sheetId: "sheet-1", parcels: [{ ...draft, span: 2 }, { ...draft, position: 2, packageNumber: "PKG-002" }] }).success).toBe(false);
+    expect(workdayDraftSchema.safeParse({ workdayId: "day-1", sheetId: "sheet-1", parcels: [{ ...draft, position: 5, span: 3 }] }).success).toBe(false);
   });
 });

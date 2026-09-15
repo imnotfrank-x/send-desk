@@ -11,7 +11,7 @@ async function main() {
   const outputDirectory = path.join(process.cwd(), "output", "pdf");
   await mkdir(outputDirectory, { recursive: true });
   const outputPath = path.join(outputDirectory, "senddesk-hoja-demo.pdf");
-  await writeFile(outputPath, await buildShipmentPdf(shipment));
+  await writeFile(outputPath, await buildShipmentPdf({ ...shipment, parcels: shipment.parcels.filter((parcel) => parcel.packageNumber && parcel.weight).map((parcel) => ({ ...parcel, packageNumber: parcel.packageNumber!, weight: parcel.weight! })) }));
   console.log(outputPath);
 }
 

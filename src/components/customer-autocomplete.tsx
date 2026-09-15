@@ -5,21 +5,24 @@ import { Search } from "lucide-react";
 
 export type CustomerOption = { id: string; code: string; name: string; phone: string; address: string };
 
-export function CustomerAutocomplete({ label, onSelect }: { label: string; onSelect: (customer: CustomerOption) => void }) {
+export function CustomerAutocomplete({ label, onSelect, relatedTo }: { label: string; onSelect: (customer: CustomerOption) => void; relatedTo?: string }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CustomerOption[]>([]);
   const [open, setOpen] = useState(false);
   const inputId = useId();
 
   useEffect(() => {
-    if (query.trim().length < 2) return;
+    if (query.trim().length < 2 && !relatedTo) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
-      const response = await fetch(`/api/clientes?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+      const parameters = new URLSearchParams();
+      if (query.trim().length >= 2) parameters.set("q", query);
+      else if (relatedTo) parameters.set("relatedTo", relatedTo);
+      const response = await fetch(`/api/clientes?${parameters}`, { signal: controller.signal });
       if (response.ok) { setResults(await response.json()); setOpen(true); }
     }, 180);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [query]);
+  }, [query, relatedTo]);
 
   return (
     <div className="relative">
