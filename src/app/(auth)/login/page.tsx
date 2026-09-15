@@ -6,7 +6,8 @@ import { getCurrentUser } from "@/lib/auth";
 export const metadata = { title: "Iniciar sesión" };
 
 export default async function LoginPage() {
-  if (await getCurrentUser()) redirect("/dashboard");
+  const user = await getCurrentUser();
+  if (user) redirect(user.role === "ADMIN" ? "/dashboard" : "/jornada");
   return (
     <AuthPanel mode="login">
       <LoginForm />

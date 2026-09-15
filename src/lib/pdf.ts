@@ -6,6 +6,8 @@ export type ShipmentPdfData = {
   createdBy: { name: string };
   parcels: Array<{
     position: number;
+    span?: number;
+    packageCount?: number;
     packageNumber: string;
     senderName: string;
     senderPhone: string;
@@ -28,9 +30,22 @@ const pale = rgb(248 / 255, 250 / 255, 252 / 255);
 
 export async function buildShipmentPdf(shipment: ShipmentPdfData) {
   const document = await PDFDocument.create();
-  const page = document.addPage([841.89, 595.28]);
   const regular = await document.embedFont(StandardFonts.Helvetica);
   const bold = await document.embedFont(StandardFonts.HelveticaBold);
+  drawShipmentPage(document, shipment, regular, bold, 1, 1);
+  return document.save();
+}
+
+export async function buildWorkdayPdf(shipments: ShipmentPdfData[]) {
+  const document = await PDFDocument.create();
+  const regular = await document.embedFont(StandardFonts.Helvetica);
+  const bold = await document.embedFont(StandardFonts.HelveticaBold);
+  shipments.forEach((shipment, index) => drawShipmentPage(document, shipment, regular, bold, index + 1, shipments.length));
+  return document.save();
+}
+
+function drawShipmentPage(document: PDFDocument, shipment: ShipmentPdfData, regular: PDFFont, bold: PDFFont, pageNumber: number, pageCount: number) {
+  const page = document.addPage([841.89, 595.28]);
   const { width, height } = page.getSize();
 
   page.drawRectangle({ x: 0, y: 0, width, height, color: rgb(1, 1, 1) });
@@ -42,7 +57,8 @@ export async function buildShipmentPdf(shipment: ShipmentPdfData) {
   const captured = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Mexico_City" }).format(shipment.createdAt);
   page.drawText(`Fecha: ${captured}`, { x: 620, y: height - 34, size: 8.5, font: regular, color: rgb(0.9, 0.94, 0.97) });
   page.drawText(`Capturo: ${clean(shipment.createdBy.name)}`, { x: 620, y: height - 50, size: 8.5, font: regular, color: rgb(0.9, 0.94, 0.97) });
-  page.drawText(`Paquetes: ${shipment.parcels.length} de 6`, { x: 620, y: height - 66, size: 8.5, font: regular, color: rgb(0.9, 0.94, 0.97) });
+  const packageCount = shipment.parcels.reduce((total, parcel) => total + (parcel.packageCount ?? 1), 0);
+  page.drawText(`Paquetes: ${packageCount}`, { x: 620, y: height - 66, size: 8.5, font: regular, color: rgb(0.9, 0.94, 0.97) });
 
   const margin = 24;
   const gap = 10;
@@ -56,15 +72,17 @@ export async function buildShipmentPdf(shipment: ShipmentPdfData) {
     const row = Math.floor(index / 2);
     const x = margin + column * (cellWidth + gap);
     const y = top - (row + 1) * cellHeight - row * gap;
-    drawParcelCell(page, shipment.parcels[index], index + 1, x, y, cellWidth, cellHeight, regular, bold);
+    const position = index + 1;
+    const parcel = shipment.parcels.find((item) => item.position === position);
+    const owner = shipment.parcels.find((item) => position > item.position && position < item.position + (item.span ?? 1));
+    drawParcelCell(page, parcel, position, x, y, cellWidth, cellHeight, regular, bold, owner?.position);
   }
 
   page.drawText("Documento generado por SendDesk - MVP academico", { x: margin, y: 7, size: 7, font: regular, color: slate });
-  page.drawText("1 / 1", { x: width - 48, y: 7, size: 7, font: regular, color: slate });
-  return document.save();
+  page.drawText(`${pageNumber} / ${pageCount}`, { x: width - 48, y: 7, size: 7, font: regular, color: slate });
 }
 
-function drawParcelCell(page: PDFPage, parcel: ShipmentPdfData["parcels"][number] | undefined, position: number, x: number, y: number, width: number, height: number, regular: PDFFont, bold: PDFFont) {
+function drawParcelCell(page: PDFPage, parcel: ShipmentPdfData["parcels"][number] | undefined, position: number, x: number, y: number, width: number, height: number, regular: PDFFont, bold: PDFFont, absorbedBy?: number) {
   page.drawRectangle({ x, y, width, height, borderColor: line, borderWidth: 0.9, color: rgb(1, 1, 1) });
   page.drawRectangle({ x, y: y + height - 27, width, height: 27, color: parcel ? pale : rgb(0.98, 0.98, 0.98) });
   page.drawCircle({ x: x + 18, y: y + height - 13.5, size: 9.5, color: parcel ? blue : line });
@@ -72,11 +90,12 @@ function drawParcelCell(page: PDFPage, parcel: ShipmentPdfData["parcels"][number
   page.drawText(`PAQUETE ${position}`, { x: x + 34, y: y + height - 17, size: 9, font: bold, color: navy });
 
   if (!parcel) {
-    page.drawText("POSICION DISPONIBLE", { x: x + width / 2 - 43, y: y + height / 2 - 3, size: 8, font: bold, color: line });
+    page.drawText(absorbedBy ? `ESPACIO ABSORBIDO POR BLOQUE ${absorbedBy}` : "POSICION DISPONIBLE", { x: x + width / 2 - (absorbedBy ? 75 : 43), y: y + height / 2 - 3, size: 8, font: bold, color: absorbedBy ? blue : line });
     return;
   }
 
   page.drawText(clean(parcel.packageNumber), { x: x + width - 118, y: y + height - 17, size: 9, font: bold, color: orange, maxWidth: 108 });
+  if ((parcel.span ?? 1) > 1) page.drawText(`EXPANDIDO x${parcel.span}`, { x: x + 120, y: y + height - 17, size: 7, font: bold, color: blue });
   const infoY = y + height - 48;
   label(page, "PESO", `${parcel.weight.toFixed(2)} kg`, x + 14, infoY, regular, bold);
   label(page, "DESCRIPCION", clean(parcel.description), x + 92, infoY, regular, bold, width - 105);

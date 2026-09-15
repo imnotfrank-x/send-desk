@@ -18,6 +18,12 @@ enum ShipmentStatus {
   READY
 }
 
+enum WorkdayStatus {
+  ACTIVE
+  PAUSED
+  FINALIZED
+}
+
 model User {
   id           String     @id @default(cuid())
   name         String
@@ -27,20 +33,60 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   shipments    Shipment[]
+  workdays     Workday[]  @relation("WorkdayCreator")
+  editedDays   Workday[]  @relation("WorkdayLastEditor")
 }
 
 model Customer {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  name      String
-  phone     String
-  address   String
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String             @id @default(cuid())
+  code              String             @unique
+  name              String
+  phone             String
+  address           String
+  notes             String?
+  lastShipmentAt    DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  outgoingRelations CustomerRelation[] @relation("RelationSender")
+  incomingRelations CustomerRelation[] @relation("RelationRecipient")
 
   @@index([name])
   @@index([phone])
+}
+
+model CustomerRelation {
+  id          String   @id @default(cuid())
+  senderId    String
+  recipientId String
+  sender      Customer @relation("RelationSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   Customer @relation("RelationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  usageCount  Int      @default(1)
+  lastUsedAt  DateTime @default(now())
+
+  @@unique([senderId, recipientId])
+  @@index([senderId, usageCount])
+}
+
+model Workday {
+  id               String        @id @default(cuid())
+  status           WorkdayStatus @default(ACTIVE)
+  startedAt        DateTime      @default(now())
+  pausedAt         DateTime?
+  finalizedAt      DateTime?
+  pdfGeneratedAt   DateTime?
+  pdfData          Bytes?
+  directorySavedAt DateTime?
+  createdById      String
+  createdBy        User          @relation("WorkdayCreator", fields: [createdById], references: [id])
+  lastEditorId     String?
+  lastEditor       User?         @relation("WorkdayLastEditor", fields: [lastEditorId], references: [id])
+  lastActivityAt   DateTime?
+  shipments        Shipment[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([status])
+  @@index([finalizedAt])
 }
 
 model Shipment {
@@ -49,6 +95,9 @@ model Shipment {
   status      ShipmentStatus @default(READY)
   createdById String
   createdBy   User           @relation(fields: [createdById], references: [id])
+  workdayId   String?
+  workday     Workday?       @relation(fields: [workdayId], references: [id], onDelete: Cascade)
+  sheetIndex  Int            @default(1)
   parcels     Parcel[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -56,6 +105,7 @@ model Shipment {
   @@index([createdAt])
   @@index([status])
   @@index([createdById])
+  @@index([workdayId, sheetIndex])
 }
 
 model Parcel {
@@ -63,15 +113,17 @@ model Parcel {
   shipmentId       String
   shipment         Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   position         Int
-  packageNumber    String   @unique
-  senderName       String
-  senderPhone      String
-  senderAddress    String
-  recipientName    String
-  recipientPhone   String
-  recipientAddress String
-  weight           Float
-  description      String
+  span             Int      @default(1)
+  packageNumber    String?  @unique
+  senderName       String   @default("")
+  senderPhone      String   @default("")
+  senderAddress    String   @default("")
+  recipientName    String   @default("")
+  recipientPhone   String   @default("")
+  recipientAddress String   @default("")
+  weight           Float?
+  description      String   @default("")
+  packageCount     Int      @default(0)
   createdAt        DateTime @default(now())
 
   @@unique([shipmentId, position])

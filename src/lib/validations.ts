@@ -37,6 +37,45 @@ export const parcelSchema = z.object({
   description: z.string().trim().min(2, "Agrega una descripción.").max(300),
 });
 
+export const parcelDraftSchema = z.object({
+  id: z.string().optional(),
+  position: z.number().int().min(1).max(6),
+  span: z.number().int().min(1).max(6),
+  packageNumber: z.string().trim().max(40),
+  senderName: z.string().trim().max(100),
+  senderPhone: z.string().trim().max(25),
+  senderAddress: z.string().trim().max(240),
+  recipientName: z.string().trim().max(100),
+  recipientPhone: z.string().trim().max(25),
+  recipientAddress: z.string().trim().max(240),
+  weight: z.number().min(0).max(10000),
+  description: z.string().trim().max(300),
+  packageCount: z.number().int().min(0).max(10000),
+});
+
+export const workdayDraftSchema = z.object({
+  workdayId: z.string(),
+  sheetId: z.string(),
+  parcels: z.array(parcelDraftSchema).max(6),
+}).superRefine(({ parcels }, context) => {
+  const occupied = new Set<number>();
+  for (const parcel of parcels) {
+    for (let slot = parcel.position; slot < parcel.position + parcel.span; slot += 1) {
+      if (slot > 6 || occupied.has(slot)) context.addIssue({ code: "custom", message: "Los bloques se traslapan o exceden la hoja.", path: ["parcels"] });
+      occupied.add(slot);
+    }
+  }
+});
+
+export const employeeSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(2, "Escribe el nombre del empleado.").max(100),
+  email: z.string().trim().email("Escribe un correo válido.").max(254).toLowerCase(),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres.")
+    .refine((value) => new TextEncoder().encode(value).length <= 72, "La contraseña es demasiado larga."),
+  role: z.enum(["ADMIN", "OPERADOR"]).default("OPERADOR"),
+});
+
 export const shipmentSchema = z.object({
   parcels: z.array(parcelSchema).min(1, "Agrega al menos un paquete.").max(6, "Una hoja admite como máximo seis paquetes."),
 }).superRefine(({ parcels }, context) => {
@@ -47,8 +86,10 @@ export const shipmentSchema = z.object({
 });
 
 export type ParcelInput = z.infer<typeof parcelSchema>;
+export type ParcelDraftInput = z.infer<typeof parcelDraftSchema>;
 
 export type ActionState = {
   error?: string;
+  success?: string;
   fieldErrors?: Record<string, string[]>;
 };
